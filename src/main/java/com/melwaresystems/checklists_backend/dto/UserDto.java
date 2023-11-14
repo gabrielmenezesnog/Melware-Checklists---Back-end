@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.melwaresystems.checklists_backend.models.PersonModel;
 import com.melwaresystems.checklists_backend.models.UserModel;
-import com.melwaresystems.checklists_backend.models.enums.UserStatus;
+import com.melwaresystems.checklists_backend.models.enums.Status;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -26,7 +26,7 @@ public class UserDto implements Serializable {
     private String password;
 
     @NotBlank
-    private UserStatus userStatus;
+    private Status status;
 
     @NotBlank
     private LocalDateTime dateCreated;
@@ -41,7 +41,7 @@ public class UserDto implements Serializable {
         idUser = user.getIdUser();
         email = user.getEmail();
         password = user.getPassword();
-        userStatus = user.getUserStatus();
+        status = user.getUserStatus();
         dateCreated = user.getDateCreated();
         person = user.getPerson();
     }
@@ -70,12 +70,12 @@ public class UserDto implements Serializable {
         this.password = password;
     }
 
-    public UserStatus getUserStatus() {
-        return userStatus;
+    public Status getUserStatus() {
+        return status;
     }
 
-    public void setUserStatus(UserStatus userStatus) {
-        this.userStatus = userStatus;
+    public void setUserStatus(Status status) {
+        this.status = status;
     }
 
     public LocalDateTime getDateCreated() {

@@ -23,7 +23,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.melwaresystems.checklists_backend.dto.UserDto;
 import com.melwaresystems.checklists_backend.models.UserModel;
-import com.melwaresystems.checklists_backend.models.enums.UserStatus;
+import com.melwaresystems.checklists_backend.models.enums.Status;
 import com.melwaresystems.checklists_backend.services.UserService;
 
 @RestController
@@ -60,7 +60,7 @@ public class UserController {
 
         user.setEmail(user.getEmail().toLowerCase());
         user.setDateCreated(LocalDateTime.now((ZoneId.of("UTC"))));
-        user.setUserStatus(UserStatus.ACTIVE);
+        user.setUserStatus(Status.ACTIVE);
 
         user = userService.registerUser(user);
 

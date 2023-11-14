@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.melwaresystems.checklists_backend.models.enums.UserStatus;
+import com.melwaresystems.checklists_backend.models.enums.Status;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -33,7 +33,7 @@ public class UserModel implements Serializable {
   private String password;
 
   @Column(nullable = false, length = 5)
-  private Integer userStatus;
+  private Integer status;
 
   @Column(nullable = false, length = 10)
   private LocalDateTime dateCreated;
@@ -45,12 +45,12 @@ public class UserModel implements Serializable {
   public UserModel() {
   }
 
-  public UserModel(UUID id, String email, String password, UserStatus userStatus,
+  public UserModel(UUID id, String email, String password, Status status,
       LocalDateTime dateCreated, PersonModel person) {
     this.idUser = id;
     this.email = email;
     this.password = password;
-    setUserStatus(userStatus);
+    setUserStatus(status);
     this.dateCreated = dateCreated;
     this.person = person;
   }
@@ -79,13 +79,13 @@ public class UserModel implements Serializable {
     this.password = password;
   }
 
-  public UserStatus getUserStatus() {
-    return UserStatus.valueOf(userStatus);
+  public Status getUserStatus() {
+    return Status.valueOf(status);
   }
 
-  public void setUserStatus(UserStatus userStatus) {
-    if (userStatus != null) {
-      this.userStatus = userStatus.getCode();
+  public void setUserStatus(Status status) {
+    if (status != null) {
+      this.status = status.getCode();
     }
   }
 

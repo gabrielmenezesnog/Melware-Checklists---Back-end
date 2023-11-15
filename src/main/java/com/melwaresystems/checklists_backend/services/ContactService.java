@@ -34,6 +34,11 @@ public class ContactService {
         return contact.orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
+    public Boolean existsByPhoneNumber(String phone) {
+        Boolean isPhoneNumberExists = contactRepository.existsByPhoneNumber(phone);
+        return isPhoneNumberExists;
+    }
+
     @Transactional
     public ContactModel createContact(ContactModel contact) {
         try {

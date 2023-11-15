@@ -34,6 +34,11 @@ public class UserService {
         return user.orElseThrow(() -> new ResourceNotFoundException(email));
     }
 
+    public UserModel findById(UUID id) {
+        Optional<UserModel> user = userRepository.findById(id);
+        return user.orElseThrow(() -> new ResourceNotFoundException(id));
+    }
+
     public Boolean existsByEmail(String email) {
         Boolean isEmailExists = userRepository.existsByEmail(email);
         return isEmailExists;
@@ -80,6 +85,6 @@ public class UserService {
 
     public UserModel fromDTO(UserDto userDto) {
         return new UserModel(userDto.getIdUser(), userDto.getEmail(), userDto.getPassword(), userDto.getUserStatus(),
-                userDto.getDateCreated(), userDto.getPerson());
+                userDto.getDateCreated(), userDto.getPerson(), userDto.getTaskLists());
     }
 }

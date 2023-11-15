@@ -24,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.melwaresystems.checklists_backend.dto.UserDto;
 import com.melwaresystems.checklists_backend.models.UserModel;
 import com.melwaresystems.checklists_backend.models.enums.Status;
+import com.melwaresystems.checklists_backend.services.ContactService;
 import com.melwaresystems.checklists_backend.services.UserService;
 
 @RestController
@@ -33,6 +34,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    ContactService contactService;
 
     @GetMapping("/getAll")
     public List<UserDto> getUsers() {
@@ -51,16 +55,22 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<String> createuser(@RequestBody UserDto userDto) {
         boolean isEmailExists = userService.existsByEmail(userDto.getEmail());
+        boolean isPhoneNumberExists = contactService
+        .existsByPhoneNumber(userDto.getPerson().getContact().getPhoneNumber());
 
         if (isEmailExists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
+        }
+
+        if (isPhoneNumberExists) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone number already registered");
         }
 
         UserModel user = userService.fromDTO(userDto);
 
         user.setEmail(user.getEmail().toLowerCase());
         user.setDateCreated(LocalDateTime.now((ZoneId.of("UTC"))));
-        user.setUserStatus(Status.ACTIVE);
+        user.setStatus(Status.ACTIVE);
 
         user = userService.registerUser(user);
 

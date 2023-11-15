@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.melwaresystems.checklists_backend.models.enums.Status;
 
 import jakarta.persistence.CascadeType;
@@ -17,25 +18,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "USER")
-public class UserModel implements Serializable {
+@Table(name = "TASK_LIST")
+public class TaskListModel implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(nullable = false, unique = true)
-  private UUID idUser;
+  private UUID idTaskList;
 
-  @Column(nullable = false, length = 60, unique = true)
-  private String email;
-
-  @Column(nullable = false, length = 40)
-  private String password;
+  @Column(nullable = false, length = 60)
+  private String title;
 
   @Column(nullable = false, length = 5)
   private Integer status;
@@ -43,50 +41,48 @@ public class UserModel implements Serializable {
   @Column(nullable = false, length = 10)
   private LocalDateTime dateCreated;
 
-  @OneToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "id_person")
-  private PersonModel person;
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "taskList", cascade = CascadeType.ALL)
+  private List<TaskModel> tasks = new ArrayList<>();
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
-  @JsonIgnore
-  private List<TaskListModel> taskLists = new ArrayList<>();
+  @ManyToOne
+  @JoinColumn(name = "id_user", nullable = false)
+  @JsonBackReference
+  private UserModel user;
 
-  public UserModel() {
+  public TaskListModel() {
   }
 
-  public UserModel(UUID idUser, String email, String password, Status status, LocalDateTime dateCreated,
-      PersonModel person, List<TaskListModel> taskLists) {
-    this.idUser = idUser;
-    this.email = email;
-    this.password = password;
+  public TaskListModel(UUID idTaskList, String title, Status status, LocalDateTime dateCreated) {
+    this.idTaskList = idTaskList;
+    this.title = title;
     setStatus(status);
     this.dateCreated = dateCreated;
-    this.person = person;
-    this.taskLists = taskLists;
   }
 
-  public UUID getIdUser() {
-    return idUser;
+  public TaskListModel(UUID idTaskList, String title, Integer status, LocalDateTime dateCreated, List<TaskModel> tasks,
+      UserModel user) {
+    this.idTaskList = idTaskList;
+    this.title = title;
+    this.status = status;
+    this.dateCreated = dateCreated;
+    this.tasks = tasks;
+    this.user = user;
   }
 
-  public void setIdUser(UUID idUser) {
-    this.idUser = idUser;
+  public UUID getIdTaskList() {
+    return idTaskList;
   }
 
-  public String getEmail() {
-    return email;
+  public void setIdTaskList(UUID idTaskList) {
+    this.idTaskList = idTaskList;
   }
 
-  public void setEmail(String email) {
-    this.email = email;
+  public String getTitle() {
+    return title;
   }
 
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
+  public void setTitle(String title) {
+    this.title = title;
   }
 
   public Status getStatus() {
@@ -107,27 +103,27 @@ public class UserModel implements Serializable {
     this.dateCreated = dateCreated;
   }
 
-  public PersonModel getPerson() {
-    return person;
+  public List<TaskModel> getTasks() {
+    return tasks;
   }
 
-  public void setPerson(PersonModel person) {
-    this.person = person;
+  public void setTasks(List<TaskModel> tasks) {
+    this.tasks = tasks;
   }
 
-  public List<TaskListModel> getTaskLists() {
-    return taskLists;
+  public UserModel getUser() {
+    return user;
   }
 
-  public void setTaskLists(List<TaskListModel> taskLists) {
-    this.taskLists = taskLists;
+  public void setUser(UserModel user) {
+    this.user = user;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((idUser == null) ? 0 : idUser.hashCode());
+    result = prime * result + ((idTaskList == null) ? 0 : idTaskList.hashCode());
     return result;
   }
 
@@ -139,11 +135,11 @@ public class UserModel implements Serializable {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    UserModel other = (UserModel) obj;
-    if (idUser == null) {
-      if (other.idUser != null)
+    TaskListModel other = (TaskListModel) obj;
+    if (idTaskList == null) {
+      if (other.idTaskList != null)
         return false;
-    } else if (!idUser.equals(other.idUser))
+    } else if (!idTaskList.equals(other.idTaskList))
       return false;
     return true;
   }

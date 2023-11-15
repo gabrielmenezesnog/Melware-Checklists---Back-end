@@ -2,9 +2,13 @@ package com.melwaresystems.checklists_backend.dto;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.melwaresystems.checklists_backend.models.PersonModel;
+import com.melwaresystems.checklists_backend.models.TaskListModel;
 import com.melwaresystems.checklists_backend.models.UserModel;
 import com.melwaresystems.checklists_backend.models.enums.Status;
 
@@ -34,6 +38,9 @@ public class UserDto implements Serializable {
     @NotBlank
     private PersonModel person;
 
+    @JsonIgnore
+    private List<TaskListModel> taskLists = new ArrayList<>();
+
     public UserDto() {
     }
 
@@ -41,9 +48,10 @@ public class UserDto implements Serializable {
         idUser = user.getIdUser();
         email = user.getEmail();
         password = user.getPassword();
-        status = user.getUserStatus();
+        status = user.getStatus();
         dateCreated = user.getDateCreated();
         person = user.getPerson();
+        taskLists = user.getTaskLists();
     }
 
     public UUID getIdUser() {
@@ -92,6 +100,14 @@ public class UserDto implements Serializable {
 
     public void setPerson(PersonModel person) {
         this.person = person;
+    }
+
+    public List<TaskListModel> getTaskLists() {
+        return taskLists;
+    }
+
+    public void setTaskLists(List<TaskListModel> taskLists) {
+        this.taskLists = taskLists;
     }
 
 }

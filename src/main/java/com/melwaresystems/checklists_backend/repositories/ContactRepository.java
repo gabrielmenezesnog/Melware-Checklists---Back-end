@@ -11,4 +11,7 @@ import com.melwaresystems.checklists_backend.models.ContactModel;
 @Repository
 public interface ContactRepository extends JpaRepository<ContactModel, UUID> {
     Optional<ContactModel> findById(UUID id);
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
 }

@@ -1,13 +1,18 @@
 package com.melwaresystems.checklists_backend.models;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.melwaresystems.checklists_backend.models.enums.Status;
+import com.melwaresystems.checklists_backend.models.enums.UserRole;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,8 +28,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "USER")
-public class UserModel implements Serializable {
-  private static final long serialVersionUID = 1L;
+public class UserModel implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,7 +38,7 @@ public class UserModel implements Serializable {
   @Column(nullable = false, length = 60, unique = true)
   private String email;
 
-  @Column(nullable = false, length = 40)
+  @Column(nullable = false)
   private String password;
 
   @Column(nullable = false, length = 5)
@@ -42,6 +46,9 @@ public class UserModel implements Serializable {
 
   @Column(nullable = false, length = 10)
   private LocalDateTime dateCreated;
+
+  @Column(nullable = false)
+  private UserRole role;
 
   @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "id_person")
@@ -103,6 +110,14 @@ public class UserModel implements Serializable {
     return dateCreated;
   }
 
+  public UserRole getRole() {
+    return role;
+  }
+
+  public void setRole(UserRole role) {
+    this.role = role;
+  }
+
   public void setDateCreated(LocalDateTime dateCreated) {
     this.dateCreated = dateCreated;
   }
@@ -121,6 +136,49 @@ public class UserModel implements Serializable {
 
   public void setTaskLists(List<TaskListModel> taskLists) {
     this.taskLists = taskLists;
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    if (this.role == UserRole.ADMIN) {
+      return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
+    } else {
+      return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+  }
+
+  @Override
+  public String getUsername() {
+    return email;
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    // throw new UnsupportedOperationException("Unimplemented method
+    // 'isAccountNonExpired'");
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    // throw new UnsupportedOperationException("Unimplemented method
+    // 'isAccountNonLocked'");
+    return true;
+
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    // throw new UnsupportedOperationException("Unimplemented method
+    // 'isCredentialsNonExpired'");
+    return true;
+
+  }
+
+  @Override
+  public boolean isEnabled() {
+    // throw new UnsupportedOperationException("Unimplemented method 'isEnabled'");
+    return true;
   }
 
   @Override

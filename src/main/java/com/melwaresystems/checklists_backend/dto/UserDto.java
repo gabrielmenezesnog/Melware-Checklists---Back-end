@@ -11,6 +11,7 @@ import com.melwaresystems.checklists_backend.models.PersonModel;
 import com.melwaresystems.checklists_backend.models.TaskListModel;
 import com.melwaresystems.checklists_backend.models.UserModel;
 import com.melwaresystems.checklists_backend.models.enums.Status;
+import com.melwaresystems.checklists_backend.models.enums.UserRole;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -26,7 +27,6 @@ public class UserDto implements Serializable {
     private String email;
 
     @NotBlank
-    @Size(max = 40)
     private String password;
 
     @NotBlank
@@ -34,6 +34,9 @@ public class UserDto implements Serializable {
 
     @NotBlank
     private LocalDateTime dateCreated;
+
+    @NotBlank
+    private UserRole role;
 
     @NotBlank
     private PersonModel person;
@@ -50,6 +53,7 @@ public class UserDto implements Serializable {
         password = user.getPassword();
         status = user.getStatus();
         dateCreated = user.getDateCreated();
+        role = user.getRole();
         person = user.getPerson();
         taskLists = user.getTaskLists();
     }
@@ -92,6 +96,14 @@ public class UserDto implements Serializable {
 
     public void setDateCreated(LocalDateTime dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public PersonModel getPerson() {

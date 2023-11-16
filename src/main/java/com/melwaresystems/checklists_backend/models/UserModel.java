@@ -65,7 +65,6 @@ public class UserModel implements UserDetails {
       PersonModel person, List<TaskListModel> taskLists) {
     this.idUser = idUser;
     this.email = email;
-    this.password = password;
     setStatus(status);
     this.dateCreated = dateCreated;
     this.person = person;

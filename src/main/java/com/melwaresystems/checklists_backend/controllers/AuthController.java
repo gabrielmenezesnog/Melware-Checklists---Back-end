@@ -1,6 +1,5 @@
 package com.melwaresystems.checklists_backend.controllers;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.melwaresystems.checklists_backend.dto.AuthDto;
 import com.melwaresystems.checklists_backend.dto.AuthResponseDto;
@@ -63,7 +61,7 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail()),
+            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), user.getPerson()),
                     HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -71,10 +69,13 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<UserModel> createuser(@RequestBody UserDto userDto) {
+    public ResponseEntity<AuthResponseDto> createuser(@RequestBody UserDto userDto) {
         boolean isEmailExists = userService.existsByEmail(userDto.getEmail());
+
         boolean isPhoneNumberExists = contactService
                 .existsByPhoneNumber(userDto.getPerson().getContact().getPhoneNumber());
+
+        UserModel user = userService.fromDTO(userDto);
 
         if (isEmailExists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
@@ -84,8 +85,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
 
-        UserModel user = userService.fromDTO(userDto);
-
         user.setEmail(user.getEmail().toLowerCase());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setDateCreated(LocalDateTime.now((ZoneId.of("UTC"))));
@@ -94,9 +93,19 @@ public class AuthController {
 
         user = authService.registerUser(user);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getIdUser())
-                .toUri();
-        return ResponseEntity.created(uri).body(user);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getEmail(),
+                            userDto.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), user.getPerson()),
+                    HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

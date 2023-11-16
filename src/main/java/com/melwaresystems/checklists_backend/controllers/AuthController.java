@@ -49,18 +49,25 @@ public class AuthController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authDto.getEmail(),
-                        authDto.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
         UserModel user = (UserModel) userService.findByUsername(authDto.getEmail());
 
-        return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail()),
-                HttpStatus.OK);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authDto.getEmail(),
+                            authDto.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail()),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/sign-up")

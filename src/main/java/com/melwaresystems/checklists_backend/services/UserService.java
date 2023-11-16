@@ -7,17 +7,16 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.melwaresystems.checklists_backend.dto.UserDto;
 import com.melwaresystems.checklists_backend.models.UserModel;
 import com.melwaresystems.checklists_backend.repositories.UserRepository;
 import com.melwaresystems.checklists_backend.services.exceptions.DatabaseException;
-import com.melwaresystems.checklists_backend.services.exceptions.DuplicateEntryException;
 import com.melwaresystems.checklists_backend.services.exceptions.ResourceNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -29,29 +28,19 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public UserModel findByEmail(String email) {
-        Optional<UserModel> user = userRepository.findByEmail(email);
-        return user.orElseThrow(() -> new ResourceNotFoundException(email));
-    }
-
     public UserModel findById(UUID id) {
         Optional<UserModel> user = userRepository.findById(id);
         return user.orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
+    public UserDetails findByUsername(String email) {
+        UserDetails user = userRepository.findByEmail(email);
+        return user;
+    }
+
     public Boolean existsByEmail(String email) {
         Boolean isEmailExists = userRepository.existsByEmail(email);
         return isEmailExists;
-    }
-
-    @Transactional
-    public UserModel registerUser(UserModel user) {
-        try {
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new DuplicateEntryException();
-        }
-        return user;
     }
 
     public UserModel updateUser(UserModel user) {

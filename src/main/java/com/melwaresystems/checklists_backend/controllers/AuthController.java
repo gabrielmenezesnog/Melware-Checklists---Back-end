@@ -24,6 +24,7 @@ import com.melwaresystems.checklists_backend.models.enums.Status;
 import com.melwaresystems.checklists_backend.models.enums.UserRole;
 import com.melwaresystems.checklists_backend.services.AuthService;
 import com.melwaresystems.checklists_backend.services.ContactService;
+import com.melwaresystems.checklists_backend.services.TokenService;
 import com.melwaresystems.checklists_backend.services.UserService;
 
 @RestController
@@ -45,13 +46,17 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    TokenService tokenService;
+
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) {
         UserModel user = (UserModel) userService.findByUsername(authDto.getEmail());
 
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        var usernamePassword = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        var token = tokenService.generateToken((UserModel) auth.getPrincipal());
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -61,7 +66,7 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), user.getPerson()),
+            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
                     HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -101,7 +106,10 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), user.getPerson()),
+            var token = tokenService.generateToken((UserModel) authentication.getPrincipal());
+
+            return new ResponseEntity<>(
+                    new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
                     HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

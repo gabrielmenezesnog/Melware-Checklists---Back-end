@@ -8,6 +8,14 @@ public class AuthResponseDto {
     private UUID id;
     private String email;
     private PersonModel person;
+    private String token;
+
+    public AuthResponseDto(UUID id, String email, String token, PersonModel person) {
+        this.id = id;
+        this.email = email;
+        this.token = token;
+        this.person = person;
+    }
 
     public AuthResponseDto(UUID id, String email, PersonModel person) {
         this.id = id;
@@ -29,6 +37,14 @@ public class AuthResponseDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public PersonModel getPerson() {

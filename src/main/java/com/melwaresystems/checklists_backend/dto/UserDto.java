@@ -82,11 +82,11 @@ public class UserDto implements Serializable {
         this.password = password;
     }
 
-    public Status getUserStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setUserStatus(Status status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 

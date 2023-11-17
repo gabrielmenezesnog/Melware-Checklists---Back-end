@@ -73,7 +73,7 @@ public class UserService {
     }
 
     public UserModel fromDTO(UserDto userDto) {
-        return new UserModel(userDto.getIdUser(), userDto.getEmail(), userDto.getPassword(), userDto.getUserStatus(),
+        return new UserModel(userDto.getIdUser(), userDto.getEmail(), userDto.getPassword(), userDto.getStatus(),
                 userDto.getDateCreated(), userDto.getPerson(), userDto.getTaskLists());
     }
 }

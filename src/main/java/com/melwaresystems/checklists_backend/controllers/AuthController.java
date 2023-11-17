@@ -1,6 +1,5 @@
 package com.melwaresystems.checklists_backend.controllers;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.melwaresystems.checklists_backend.dto.AuthDto;
 import com.melwaresystems.checklists_backend.dto.AuthResponseDto;
@@ -26,6 +24,7 @@ import com.melwaresystems.checklists_backend.models.enums.Status;
 import com.melwaresystems.checklists_backend.models.enums.UserRole;
 import com.melwaresystems.checklists_backend.services.AuthService;
 import com.melwaresystems.checklists_backend.services.ContactService;
+import com.melwaresystems.checklists_backend.services.TokenService;
 import com.melwaresystems.checklists_backend.services.UserService;
 
 @RestController
@@ -47,27 +46,41 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    TokenService tokenService;
+
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authDto.getEmail(),
-                        authDto.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
         UserModel user = (UserModel) userService.findByUsername(authDto.getEmail());
 
-        return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail()),
-                HttpStatus.OK);
+        var usernamePassword = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        var token = tokenService.generateToken((UserModel) auth.getPrincipal());
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authDto.getEmail(),
+                            authDto.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<UserModel> createuser(@RequestBody UserDto userDto) {
+    public ResponseEntity<AuthResponseDto> createuser(@RequestBody UserDto userDto) {
         boolean isEmailExists = userService.existsByEmail(userDto.getEmail());
+
         boolean isPhoneNumberExists = contactService
                 .existsByPhoneNumber(userDto.getPerson().getContact().getPhoneNumber());
+
+        UserModel user = userService.fromDTO(userDto);
 
         if (isEmailExists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
@@ -77,8 +90,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
 
-        UserModel user = userService.fromDTO(userDto);
-
         user.setEmail(user.getEmail().toLowerCase());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setDateCreated(LocalDateTime.now((ZoneId.of("UTC"))));
@@ -87,9 +98,22 @@ public class AuthController {
 
         user = authService.registerUser(user);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getIdUser())
-                .toUri();
-        return ResponseEntity.created(uri).body(user);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getEmail(),
+                            userDto.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            var token = tokenService.generateToken((UserModel) authentication.getPrincipal());
+
+            return new ResponseEntity<>(
+                    new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
+                    HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

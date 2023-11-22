@@ -51,12 +51,12 @@ public class AuthController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) {
-        UserModel user = (UserModel) userService.findByUsername(authDto.getEmail());
 
-        var usernamePassword = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
+        boolean isEmailExists = userService.existsByEmail(authDto.getEmail());
 
-        var token = tokenService.generateToken((UserModel) auth.getPrincipal());
+        if (!isEmailExists) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -66,7 +66,11 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return new ResponseEntity<>(new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
+            UserModel user = (UserModel) authentication.getPrincipal();
+            String token = tokenService.generateToken(user);
+
+            return new ResponseEntity<>(
+                    new AuthResponseDto(user.getIdUser(), user.getEmail(), token, user.getPerson()),
                     HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

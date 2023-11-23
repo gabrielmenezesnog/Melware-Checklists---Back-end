@@ -20,7 +20,7 @@ public class ContactModel implements Serializable {
     @Column(nullable = false, unique = true)
     private UUID idContact;
 
-    @Column(nullable = false, length = 60, unique = true)
+    @Column(nullable = false, length = 60)
     private String phoneNumber;
 
     public ContactModel() {

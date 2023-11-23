@@ -81,16 +81,9 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> createuser(@RequestBody UserDto userDto) {
         boolean isEmailExists = userService.existsByEmail(userDto.getEmail());
 
-        boolean isPhoneNumberExists = contactService
-                .existsByPhoneNumber(userDto.getPerson().getContact().getPhoneNumber());
-
         UserModel user = userService.fromDTO(userDto);
 
         if (isEmailExists) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        }
-
-        if (isPhoneNumberExists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
 
